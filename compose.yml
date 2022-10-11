@@ -6,12 +6,12 @@ services:
     build:
      context: .
     restart: on-failure
-    networks:
-      - jenkins
+    depends_on:
+      - jenkins-docker
     environment:
       - DOCKER_CERT_PATH=/certs/client
       - DOCKER_TLS_VERIFY=1
-      - DOCKER_HOST=tcp://docker:2376
+      - DOCKER_HOST=tcp://jenkins-docker:2376
     volumes:
       - jenkins-data:/var/jenkins_home
       - jenkins-docker-certs:/certs/client:ro
@@ -21,8 +21,11 @@ services:
   jenkins-docker:
     image: docker:dind
     privileged: true
-    networks:
-      - jenkins
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '1'
+    #       memory: 2G
     environment:
       - DOCKER_TLS_CERTDIR=/certs
     volumes:
@@ -30,10 +33,6 @@ services:
        - jenkins-docker-certs:/certs/client
     ports:
       - "2376:2376"
-
-
-networks:
-  jenkins:
 
 volumes:
   jenkins-docker-certs:
