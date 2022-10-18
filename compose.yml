@@ -7,18 +7,21 @@ services:
      context: .
     restart: on-failure
     depends_on:
-      - jenkins-docker
+      - docker
+    networks:
+      - jenkins
     environment:
       - DOCKER_CERT_PATH=/certs/client
       - DOCKER_TLS_VERIFY=1
-      - DOCKER_HOST=tcp://jenkins-docker:2376
+      - DOCKER_HOST=tcp://docker:2376
+      - JAVA_OPTS="-Dcom.sun.jndi.ldap.object.disableEndpointIdentification=true"
     volumes:
       - jenkins-data:/var/jenkins_home
       - jenkins-docker-certs:/certs/client:ro
     ports:
       - "8080:8080"
       - "50000:50000"
-  jenkins-docker:
+  docker:
     image: docker:dind
     privileged: true
     # deploy:
@@ -26,6 +29,8 @@ services:
     #     limits:
     #       cpus: '1'
     #       memory: 2G
+    networks:
+      - jenkins
     environment:
       - DOCKER_TLS_CERTDIR=/certs
     volumes:
@@ -37,3 +42,6 @@ services:
 volumes:
   jenkins-docker-certs:
   jenkins-data:
+
+networks:
+  jenkins:
